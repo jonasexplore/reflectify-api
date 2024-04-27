@@ -13,14 +13,6 @@ const stream = pretty({
   ignore: "pid,hostname",
 });
 
-export type ClientProps = {
-  id: string;
-  roomId: string;
-  sender?: string;
-};
-
-const clients = new Map<Socket, ClientProps>();
-
 const logger = pino({}, stream);
 
 const httpLogger = pinoHttp({ level: "info" }, stream);
@@ -31,8 +23,16 @@ const server = http.createServer(app);
 const io = new Server(server, {
   path: "/api/socket",
   addTrailingSlash: false,
-  cors: { origin: "*" },
+  cors: { origin: process.env.CORS_ORIGINS },
 });
+
+export type ClientProps = {
+  id: string;
+  roomId: string;
+  sender?: string;
+};
+
+const clients = new Map<Socket, ClientProps>();
 
 io.on("connection", (socket) => {
   const roomId = socket.handshake?.query?.roomId as string;
